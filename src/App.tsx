@@ -28,7 +28,7 @@ import {
 import { config, isConfigured } from './lib/appwrite';
 import { distanceKm } from './lib/format';
 import { LANGS, useLang, type Lang } from './lib/i18n';
-import type { Category, Kind, LngLat, Message, Post } from './lib/types';
+import { isEmergency, type Category, type Kind, type LngLat, type Message, type Post } from './lib/types';
 
 type Tab = 'nearby' | 'mine' | 'heroes';
 type Toast = { id: number; msg: string; tone: 'ok' | 'warn' | 'err' };
@@ -59,6 +59,7 @@ function matches(p: Post, f: Filters) {
   if (!f.showDone && p.status === 'done') return false;
   if (f.kind !== 'all' && p.kind !== f.kind) return false;
   if (f.category !== 'all' && p.category !== f.category) return false;
+  if (f.emergency && !isEmergency(p.category)) return false;
   if (f.search.trim().length >= 3 && !p.title.toLowerCase().includes(f.search.trim().toLowerCase())) return false;
   return true;
 }
@@ -77,6 +78,7 @@ export default function App() {
   const [category, setCategory] = useState<Category | 'all'>('all');
   const [search, setSearch] = useState('');
   const [showDone, setShowDone] = useState(false);
+  const [emergency, setEmergency] = useState(false);
   const [tab, setTab] = useState<Tab>('nearby');
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -106,8 +108,8 @@ export default function App() {
   const queryCenter = useDebounced(center, 350);
   const querySearch = useDebounced(search, 300);
   const filters: Filters = useMemo(
-    () => ({ center: queryCenter, radiusKm, kind, category, search: querySearch, showDone }),
-    [queryCenter, radiusKm, kind, category, querySearch, showDone],
+    () => ({ center: queryCenter, radiusKm, kind, category, search: querySearch, showDone, emergency }),
+    [queryCenter, radiusKm, kind, category, querySearch, showDone, emergency],
   );
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
@@ -255,7 +257,14 @@ export default function App() {
 
   if (!isConfigured) return <SetupScreen />;
 
-  const visible = tab === 'mine' ? mine : posts;
+  // In emergency mode, urgent posts rise to the top; otherwise newest first (as queried).
+  const URGENCY_RANK = { high: 0, normal: 1, low: 2 } as const;
+  const visible =
+    tab === 'mine'
+      ? mine
+      : emergency
+        ? [...posts].sort((a, b) => URGENCY_RANK[a.urgency] - URGENCY_RANK[b.urgency])
+        : posts;
   const selectedPost = posts.find((p) => p.$id === selectedId) ?? mine.find((p) => p.$id === selectedId);
   const origin = myLocation ?? center;
 
@@ -333,7 +342,17 @@ export default function App() {
               <>
                 {tab === 'nearby' && (
                   <>
-                    <PulseBar rows={pulseRows} doneThisWeek={doneWeek} active={category} onPick={setCategory} />
+                    <PulseBar
+                      rows={pulseRows}
+                      doneThisWeek={doneWeek}
+                      active={category}
+                      onPick={setCategory}
+                      emergency={emergency}
+                      onEmergency={(on) => {
+                        setEmergency(on);
+                        setCategory('all');
+                      }}
+                    />
                     <div className="filters">
                       <div className="search">
                         <Search size={15} />
@@ -365,9 +384,7 @@ export default function App() {
                     <div className="empty">
                       <div className="empty__icon">{tab === 'mine' ? <Sprout size={22} /> : <Inbox size={22} />}</div>
                       <p>
-                        {tab === 'mine'
-                          ? t('empty.mine')
-                          : t('empty.nearby')}
+                        {tab === 'mine' ? t('empty.mine') : emergency ? t('empty.emergency') : t('empty.nearby')}
                       </p>
                       <button className="btn btn--primary" onClick={startCompose}>
                         <Plus size={16} /> {t('action.newPost')}

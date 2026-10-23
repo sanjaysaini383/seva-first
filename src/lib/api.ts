@@ -2,7 +2,7 @@ import { AppwriteException, ID, Operator, Permission, Query, Role } from 'appwri
 import { config, tablesDB, TABLES } from './appwrite';
 import { logEvent, prettyQuery, track } from './inspector';
 import { t } from './i18n';
-import type { Category, Kind, Kudos, LngLat, Message, Post, Urgency } from './types';
+import { EMERGENCY_CATEGORIES, type Category, type Kind, type Kudos, type LngLat, type Message, type Post, type Urgency } from './types';
 
 const databaseId = config.databaseId;
 const show = (queries: string[]) => queries.map(prettyQuery);
@@ -20,6 +20,7 @@ export type Filters = {
   category: Category | 'all';
   search: string;
   showDone: boolean;
+  emergency: boolean;
 };
 
 export function nearbyQueries(f: Filters): string[] {
@@ -32,6 +33,7 @@ export function nearbyQueries(f: Filters): string[] {
   ];
   if (f.kind !== 'all') queries.push(Query.equal('kind', f.kind));
   if (f.category !== 'all') queries.push(Query.equal('category', f.category));
+  else if (f.emergency) queries.push(Query.equal('category', EMERGENCY_CATEGORIES));
   // Full-text index on `title`; Appwrite requires at least 3 characters.
   if (f.search.trim().length >= 3) queries.push(Query.search('title', f.search.trim()));
   return queries;

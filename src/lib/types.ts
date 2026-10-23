@@ -87,5 +87,9 @@ export const CATEGORIES: { id: Category; label: string; icon: LucideIcon; color:
 
 export const categoryMeta = (id: Category) => CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[CATEGORIES.length - 1];
 
+export const EMERGENCY_CATEGORIES = CATEGORIES.filter((c) => c.emergency).map((c) => c.id);
+
+export const isEmergency = (id: Category) => EMERGENCY_CATEGORIES.includes(id);
+
 /** Category name in the current interface language. */
 export const catLabel = (id: Category) => t(`cat.${id}` as Key);
