@@ -28,6 +28,7 @@ if (!endpoint || !projectId || !apiKey) {
 const client = new Client().setEndpoint(endpoint).setProject(projectId).setKey(apiKey);
 const db = new TablesDB(client);
 
+// Keep in sync with CATEGORIES in src/lib/types.ts; emergency categories come first.
 const CATEGORIES = ['rescue', 'medicine', 'water', 'shelter', 'food', 'groceries', 'rides', 'care', 'tools', 'tech', 'pets', 'other'];
 
 /** Run a create call, treating "already exists" (409) as success. */

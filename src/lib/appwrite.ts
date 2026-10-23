@@ -19,4 +19,5 @@ export const account = new Account(client);
 export const tablesDB = new TablesDB(client);
 export const realtime = new Realtime(client);
 
+/** Table IDs in the TablesDB database; must match scripts/setup.mjs. */
 export const TABLES = { posts: 'posts', messages: 'messages', kudos: 'kudos' } as const;
