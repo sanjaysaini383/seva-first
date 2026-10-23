@@ -23,52 +23,51 @@ const db = new TablesDB(new Client().setEndpoint(endpoint).setProject(projectId)
 const args = new Set(process.argv.slice(2));
 
 const PEOPLE = [
-  'Asha', 'Rohan', 'Meera', 'Kabir', 'Priya', 'Arjun', 'Zoya', 'Dev', 'Nisha', 'Vikram',
-  'Ananya', 'Farhan', 'Lakshmi', 'Ishaan', 'Tara', 'Sameer', 'Aditi', 'Neil',
+  'Arijit', 'Moumita', 'Sourav', 'Riya', 'Debashis', 'Tanushree', 'Abhishek', 'Payel', 'Subhajit',
+  'Rakesh', 'Nandini', 'Imran', 'Shabnam', 'Pritam', 'Anjali', 'Rahul', 'Sunita', 'Biplab',
 ].map((name) => ({ id: `seed-${name.toLowerCase()}`, name }));
 
+// [kind, category, title, body, urgency]. A mix of flood relief and everyday
+// help, with some posts written in Bengali and Hindi as neighbours would.
 const IDEAS = [
-  ['request', 'tools', 'Need a power drill for 20 minutes', 'Putting up curtain rods. Will return it right away, promise!', 'normal'],
-  ['request', 'tools', 'Anyone have a ladder I can borrow this evening?', 'Changing a ceiling bulb, 8ft should do.', 'normal'],
-  ['offer', 'tools', 'Lending my pressure washer this weekend', 'Free to borrow, just bring it back clean-ish.', 'low'],
-  ['request', 'groceries', 'Could someone pick up milk and bread?', 'Down with a fever, happy to pay via UPI.', 'high'],
-  ['offer', 'groceries', 'Going to the market at 6, can pick up for 2 people', 'Short lists please', 'normal'],
-  ['request', 'rides', 'Ride to the station tomorrow 7am', 'Have one suitcase. Will split fuel.', 'normal'],
-  ['offer', 'rides', 'Driving to the airport Sunday morning, 2 seats free', 'Leaving around 5:30am.', 'low'],
-  ['request', 'rides', 'Need a lift to the hospital for a check-up', 'Appointment at 11, my car is in the shop.', 'high'],
-  ['request', 'tech', 'Help setting up WhatsApp video on my mother’s phone', 'She wants to call her grandkids. 15 mins max.', 'normal'],
-  ['offer', 'tech', 'Free laptop clean-up and virus check', 'I’m a sysadmin, happy to help seniors especially.', 'low'],
-  ['request', 'tech', 'Wi-Fi router keeps dropping — anyone techy?', 'Tried restarting a dozen times.', 'normal'],
-  ['request', 'care', 'Someone to sit with my dad for an hour', 'He’s 82 and loves cricket talk. Thursday afternoon.', 'normal'],
-  ['offer', 'care', 'Can walk with elderly neighbours in the evening', 'Park loop, 6–7pm, any day.', 'low'],
-  ['request', 'care', 'Need help carrying groceries up 4 floors', 'Lift is broken again', 'high'],
-  ['offer', 'food', 'Made too much biryani — 3 portions free', 'Veg. Pick up before 9pm.', 'normal'],
-  ['offer', 'food', 'Fresh mangoes from our tree, take a bag', 'Leaving them by the gate.', 'low'],
-  ['request', 'food', 'Looking for a home-cooked tiffin this week', 'Recovering from surgery, will pay.', 'normal'],
-  ['offer', 'food', 'Extra sourdough loaf, baked this morning', '', 'low'],
-  ['request', 'pets', 'Can someone feed my cat Sat–Sun?', 'Very friendly, just needs food + water.', 'normal'],
-  ['offer', 'pets', 'Dog walking — I walk mine at 7am anyway', 'Happy to take one more.', 'low'],
-  ['request', 'pets', 'Found a lost beagle near the temple', 'Brown collar, no tag. Is he yours?', 'high'],
+  ['request', 'rescue', 'Need a boat: water is waist-deep in our lane', 'Elderly mother on the ground floor needs to reach the relief camp.', 'high'],
+  ['offer', 'rescue', 'Have a small boat, can ferry 4 people at a time', 'Near the primary school, available until evening.', 'normal'],
+  ['request', 'medicine', 'Insulin needed urgently, pharmacy shut due to flooding', 'For my father, 70. Will pay.', 'high'],
+  ['offer', 'medicine', 'Have ORS packets and a first-aid kit to share', 'Ask at the house with the blue gate.', 'normal'],
+  ['request', 'medicine', 'জরুরি: বাবার জন্য প্রেসারের ওষুধ দরকার', 'দোকান বন্ধ, কেউ কি একটু এনে দিতে পারবেন?', 'high'],
+  ['request', 'water', 'Drinking water needed for 6 people', 'Our tube well is under water.', 'high'],
+  ['offer', 'water', '20-litre water jars available, can deliver nearby', '', 'normal'],
+  ['offer', 'shelter', 'Our first floor is dry, can host a family for two nights', 'Please bring bedding if you can.', 'normal'],
+  ['request', 'shelter', 'Need a dry place for my goats and hens', 'Just until the water goes down.', 'normal'],
+  ['offer', 'food', 'খিচুড়ি রান্না করেছি, ২০ জনের মতো খাবার আছে', 'রাত ৯টা পর্যন্ত পাড়ার ক্লাবে নিয়ে যান।', 'normal'],
+  ['offer', 'food', 'Extra home-cooked meals for 3 people', 'Veg. Pick up before 9pm.', 'normal'],
+  ['request', 'rides', 'अस्पताल जाने के लिए सवारी चाहिए', 'कल सुबह 9 बजे की अपॉइंटमेंट है।', 'normal'],
+  ['request', 'rides', 'Need a lift to Howrah station tomorrow 7am', 'One suitcase, will share fuel.', 'normal'],
+  ['offer', 'rides', 'Driving to the airport on Sunday, 2 seats free', 'Leaving around 5:30am.', 'low'],
+  ['offer', 'groceries', 'बाज़ार जा रहा हूँ, 2 लोगों का सामान ला सकता हूँ', 'छोटी लिस्ट भेजें।', 'low'],
+  ['request', 'groceries', 'Could someone pick up milk and bread?', 'Down with fever, happy to pay via UPI.', 'high'],
+  ['request', 'tech', 'Help setting up a video call on my mother’s phone', 'She wants to call her grandchildren. 15 minutes at most.', 'normal'],
+  ['offer', 'tech', 'Can help fill government forms online', 'Pension, Aadhaar updates, Swasthya Sathi enrolment.', 'low'],
+  ['request', 'care', 'Someone to sit with my grandfather for an hour', 'He loves talking about football. Thursday afternoon.', 'normal'],
+  ['offer', 'care', 'Can walk with elderly neighbours in the evening', 'Park loop, 6 to 7pm, any day.', 'low'],
+  ['request', 'tools', 'Need a ladder for 10 minutes', 'Changing a ceiling bulb.', 'normal'],
+  ['offer', 'tools', 'Lending a pump to clear water from ground floors', 'Diesel pump, bring your own pipe.', 'normal'],
+  ['request', 'pets', 'Found a lost dog near the bus stand', 'Brown, friendly, red collar. Is he yours?', 'high'],
   ['request', 'other', 'Need 4 folding chairs for a small puja', 'Saturday only.', 'normal'],
-  ['offer', 'other', 'Giving away kids’ books (age 5–8)', 'Two boxes, all in good shape.', 'low'],
-  ['request', 'other', 'Help moving a sofa to the next building', 'Need two strong hands for 15 mins.', 'normal'],
-  ['offer', 'tech', 'Can teach basic Excel on weekends', 'Free for students.', 'low'],
-  ['request', 'groceries', 'Need baby formula urgently, store is closed', 'Brand flexible. Will pay double!', 'high'],
-  ['offer', 'care', 'Can help fill government forms online', 'Pension, Aadhaar updates etc.', 'low'],
-  ['request', 'tools', 'Borrowing a sewing machine for a day', 'Hemming school uniforms.', 'low'],
+  ['offer', 'other', 'Giving away school books (Class 5 to 8)', 'Two boxes, all in good condition.', 'low'],
 ];
 
 const CHAT = [
-  'Hi! I live two lanes away, can come by.',
+  'I live two lanes away, can come by.',
+  'আমি পাশের গলিতে থাকি, আসছি।',
+  'मैं 10 मिनट में पहुँच रहा हूँ।',
   'Is this still needed?',
-  'Thank you so much',
-  'Sending you my number on here.',
-  'Be there in 10 mins.',
-  'I can do tomorrow if today doesn’t work.',
-  'Amazing, see you soon!',
+  'Thank you so much.',
+  'অনেক ধন্যবাদ!',
+  'Be there in 10 minutes.',
 ];
 
-const THANKS = ['Lifesaver!', 'So kind, thank you', 'Above and beyond', 'Super quick, thanks!', ''];
+const THANKS = ['Lifesaver!', 'অনেক ধন্যবাদ', 'बहुत-बहुत धन्यवाद', 'Super quick, thanks!', ''];
 
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 const pickOther = (exclude) => pick(PEOPLE.filter((p) => p.id !== exclude.id));
