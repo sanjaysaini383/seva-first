@@ -3,7 +3,7 @@
 **Seva First Innovation Challenge (Eastern Region)**
 Themes: Disaster Management & Community Safety · Climate & Flood Resilience · Urban & Civic Innovation · Village & Panchayat Innovation
 
-> Items marked **[to confirm]** need local details from the team before submission. Costs and numbers are estimates or targets, not results.
+> Costs and numbers in this plan are estimates or targets, not results.
 
 ---
 
@@ -19,7 +19,7 @@ Themes: Disaster Management & Community Safety · Climate & Flood Resilience · 
 The same problem exists on ordinary days for elderly people living alone, patients needing a lift to hospital, or families needing groceries during illness.
 
 **Location.** West Bengal, starting with one flood-prone pilot area:
-- **Pilot area:** [to confirm: one municipal ward in Kolkata / Howrah with recurring waterlogging, or one gram panchayat in a flood-prone block, e.g. in Purba Medinipur, Malda or Murshidabad]
+- **Pilot area:** one flood-prone Kolkata Municipal Corporation ward with recurring monsoon waterlogging, selected with the ward councillor.
 - Later: other districts of West Bengal, Bihar and Jharkhand that face recurring floods.
 
 ## 2. Proposed solution
@@ -51,7 +51,7 @@ Joining needs only a first name: no app install, email or password.
 
 | Phase | Activities |
 | --- | --- |
-| **Partnering** | Agree the pilot area with the ward councillor / panchayat pradhan and the local disaster management or civil defence office **[to confirm]**. Identify 2–3 local organisations (clubs, NGOs, self-help groups) to anchor volunteers. |
+| **Partnering** | Agree the pilot area with the ward councillor / panchayat pradhan and approach the local disaster management or civil defence office. Identify 2–3 local organisations (clubs, NGOs, self-help groups) to anchor volunteers. |
 | **Localisation** | Review the Bengali and Hindi text with local users. Add area-specific categories if needed (e.g. livestock, fodder). Configure the map centre for the pilot area. |
 | **Onboarding** | Train 20–40 volunteers (club members, ASHA/Anganwadi workers, youth groups) in short sessions. Put up QR-code posters at ration shops, clubs, schools and relief camps. |
 | **Pilot** | Run through the monsoon season. A small coordination group monitors open emergency posts daily and helps residents who cannot use a phone. |
@@ -81,7 +81,9 @@ Indicative pilot budget for one area over about 6 months (**estimates**, to be r
 - **Volunteers:** neighbours, clubs and youth groups, who get a clear, organised way to help and recognition for it.
 - **Local administration and responders:** a live picture of open needs in the area, which can support relief planning.
 
-**Pilot targets [to confirm with partners]:** about 300–500 registered residents and 30–50 active volunteers in one ward or panchayat during the first monsoon.
+**Pilot targets:** about 300–500 registered residents and 30–50 active volunteers in one ward during the first monsoon. Counting their households (about 4 people each), roughly 1,200–2,000 people could be helped.
+
+**How this was estimated:** a Kolkata Municipal Corporation ward has about 31,000 residents on average (Census 2011: about 4.5 million people across 144 wards). The targets assume 1–2% of residents register in the first season through volunteers and posters.
 
 ## 7. Timeline
 
@@ -121,7 +123,7 @@ A **working prototype** exists and is publicly available:
 - **Source code:** https://github.com/sanjaysaini383/seva-first
 - **Features working today:** live map, radius search, requests and offers, emergency categories and emergency mode, race-safe claiming, threads, completion with kudos, Heroes board, and the full Bengali / Hindi / English interface.
 - **Testing:** an automated check verifies every database feature against a live Appwrite Cloud project, including a forced simultaneous claim. A two-user browser test covers posting, live delivery, claiming, chat and completion.
-- **Demo:** [to add: demo video link and live URL]
+- **Screenshots:** see the supporting document *prototype.pdf*.
 
 No field pilot has been run yet; that is the purpose of the proposed implementation.
 
