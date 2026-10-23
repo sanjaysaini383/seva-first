@@ -3,8 +3,8 @@
 
 import { Client, TablesDB, Query, ID, Operator } from 'node-appwrite';
 
-const databaseId = process.env.VITE_APPWRITE_DATABASE_ID || 'hearth';
-const center = [Number(process.env.VITE_DEFAULT_LNG ?? 77.5946), Number(process.env.VITE_DEFAULT_LAT ?? 12.9716)];
+const databaseId = process.env.VITE_APPWRITE_DATABASE_ID || 'seva';
+const center = [Number(process.env.VITE_DEFAULT_LNG ?? 88.3639), Number(process.env.VITE_DEFAULT_LAT ?? 22.5726)];
 const db = new TablesDB(
   new Client()
     .setEndpoint(process.env.VITE_APPWRITE_ENDPOINT)

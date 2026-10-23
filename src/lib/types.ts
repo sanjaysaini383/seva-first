@@ -1,10 +1,36 @@
 import type { Models } from 'appwrite';
-import { Car, HeartHandshake, Laptop, PawPrint, ShoppingCart, Sparkles, UtensilsCrossed, Wrench, type LucideIcon } from 'lucide-react';
+import {
+  Car,
+  Droplets,
+  HeartHandshake,
+  Laptop,
+  LifeBuoy,
+  PawPrint,
+  Pill,
+  ShoppingCart,
+  Sparkles,
+  Tent,
+  UtensilsCrossed,
+  Wrench,
+  type LucideIcon,
+} from 'lucide-react';
 
 export type Kind = 'request' | 'offer';
 export type Status = 'open' | 'claimed' | 'done';
 export type Urgency = 'low' | 'normal' | 'high';
-export type Category = 'groceries' | 'tools' | 'rides' | 'tech' | 'care' | 'food' | 'pets' | 'other';
+export type Category =
+  | 'rescue'
+  | 'medicine'
+  | 'water'
+  | 'shelter'
+  | 'food'
+  | 'groceries'
+  | 'rides'
+  | 'care'
+  | 'tools'
+  | 'tech'
+  | 'pets'
+  | 'other';
 
 /** [longitude, latitude] — the order Appwrite point columns use. */
 export type LngLat = [number, number];
@@ -42,13 +68,18 @@ export type Kudos = Models.Row & {
   note: string | null;
 };
 
-export const CATEGORIES: { id: Category; label: string; icon: LucideIcon; color: string }[] = [
-  { id: 'groceries', label: 'Groceries', icon: ShoppingCart, color: '#16a34a' },
-  { id: 'tools', label: 'Tools', icon: Wrench, color: '#ca8a04' },
-  { id: 'rides', label: 'Rides', icon: Car, color: '#2563eb' },
-  { id: 'tech', label: 'Tech help', icon: Laptop, color: '#7c3aed' },
-  { id: 'care', label: 'Care', icon: HeartHandshake, color: '#db2777' },
+/** Emergency categories come first: in a flood they are what people look for. */
+export const CATEGORIES: { id: Category; label: string; icon: LucideIcon; color: string; emergency?: boolean }[] = [
+  { id: 'rescue', label: 'Rescue / boat', icon: LifeBuoy, color: '#dc2626', emergency: true },
+  { id: 'medicine', label: 'Medicine', icon: Pill, color: '#059669', emergency: true },
+  { id: 'water', label: 'Drinking water', icon: Droplets, color: '#0284c7', emergency: true },
+  { id: 'shelter', label: 'Shelter', icon: Tent, color: '#92400e', emergency: true },
   { id: 'food', label: 'Food', icon: UtensilsCrossed, color: '#ea580c' },
+  { id: 'groceries', label: 'Groceries', icon: ShoppingCart, color: '#65a30d' },
+  { id: 'rides', label: 'Rides', icon: Car, color: '#2563eb' },
+  { id: 'care', label: 'Care', icon: HeartHandshake, color: '#db2777' },
+  { id: 'tools', label: 'Tools', icon: Wrench, color: '#ca8a04' },
+  { id: 'tech', label: 'Tech help', icon: Laptop, color: '#7c3aed' },
   { id: 'pets', label: 'Pets', icon: PawPrint, color: '#0891b2' },
   { id: 'other', label: 'Other', icon: Sparkles, color: '#64748b' },
 ];

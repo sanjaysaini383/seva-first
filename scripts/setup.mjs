@@ -18,7 +18,7 @@ import {
 const endpoint = process.env.VITE_APPWRITE_ENDPOINT;
 const projectId = process.env.VITE_APPWRITE_PROJECT_ID;
 const apiKey = process.env.APPWRITE_API_KEY;
-const databaseId = process.env.VITE_APPWRITE_DATABASE_ID || 'hearth';
+const databaseId = process.env.VITE_APPWRITE_DATABASE_ID || 'seva';
 
 if (!endpoint || !projectId || !apiKey) {
   console.error('Missing VITE_APPWRITE_ENDPOINT, VITE_APPWRITE_PROJECT_ID or APPWRITE_API_KEY in .env');
@@ -28,7 +28,7 @@ if (!endpoint || !projectId || !apiKey) {
 const client = new Client().setEndpoint(endpoint).setProject(projectId).setKey(apiKey);
 const db = new TablesDB(client);
 
-const CATEGORIES = ['groceries', 'tools', 'rides', 'tech', 'care', 'food', 'pets', 'other'];
+const CATEGORIES = ['rescue', 'medicine', 'water', 'shelter', 'food', 'groceries', 'rides', 'care', 'tools', 'tech', 'pets', 'other'];
 
 /** Run a create call, treating "already exists" (409) as success. */
 async function ensure(label, fn) {

@@ -10,9 +10,9 @@ import { Client, TablesDB, ID, Permission, Role, Query } from 'node-appwrite';
 const endpoint = process.env.VITE_APPWRITE_ENDPOINT;
 const projectId = process.env.VITE_APPWRITE_PROJECT_ID;
 const apiKey = process.env.APPWRITE_API_KEY;
-const databaseId = process.env.VITE_APPWRITE_DATABASE_ID || 'hearth';
-const lat0 = Number(process.env.VITE_DEFAULT_LAT ?? 12.9716);
-const lng0 = Number(process.env.VITE_DEFAULT_LNG ?? 77.5946);
+const databaseId = process.env.VITE_APPWRITE_DATABASE_ID || 'seva';
+const lat0 = Number(process.env.VITE_DEFAULT_LAT ?? 22.5726);
+const lng0 = Number(process.env.VITE_DEFAULT_LNG ?? 88.3639);
 
 if (!endpoint || !projectId || !apiKey) {
   console.error('Missing VITE_APPWRITE_ENDPOINT, VITE_APPWRITE_PROJECT_ID or APPWRITE_API_KEY in .env');

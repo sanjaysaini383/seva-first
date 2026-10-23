@@ -3,10 +3,10 @@ import { Account, Client, Realtime, TablesDB } from 'appwrite';
 export const config = {
   endpoint: import.meta.env.VITE_APPWRITE_ENDPOINT as string | undefined,
   projectId: import.meta.env.VITE_APPWRITE_PROJECT_ID as string | undefined,
-  databaseId: (import.meta.env.VITE_APPWRITE_DATABASE_ID as string | undefined) || 'hearth',
+  databaseId: (import.meta.env.VITE_APPWRITE_DATABASE_ID as string | undefined) || 'seva',
   defaultCenter: [
-    Number(import.meta.env.VITE_DEFAULT_LNG ?? 77.5946),
-    Number(import.meta.env.VITE_DEFAULT_LAT ?? 12.9716),
+    Number(import.meta.env.VITE_DEFAULT_LNG ?? 88.3639),
+    Number(import.meta.env.VITE_DEFAULT_LAT ?? 22.5726),
   ] as [number, number],
 };
 
