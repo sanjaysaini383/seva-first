@@ -1,6 +1,7 @@
 import { t } from './i18n';
 import type { LngLat } from './types';
 
+/** Great-circle distance in kilometres between two [lng, lat] points (haversine formula). */
 export function distanceKm([lng1, lat1]: LngLat, [lng2, lat2]: LngLat): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -14,6 +15,7 @@ export function formatDistance(km: number): string {
   return t('dist.km', { n: km < 10 ? km.toFixed(1) : Math.round(km) });
 }
 
+/** Short relative time such as "5m ago", in the current interface language. */
 export function timeAgo(iso: string): string {
   const s = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 45) return t('time.justNow');
@@ -24,6 +26,7 @@ export function timeAgo(iso: string): string {
   return t('time.d', { n: Math.round(h / 24) });
 }
 
+/** Time remaining until a post expires, or null when it has no expiry. */
 export function timeLeft(iso: string | null): string | null {
   if (!iso) return null;
   const ms = new Date(iso).getTime() - Date.now();
