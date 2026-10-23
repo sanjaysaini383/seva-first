@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import L from 'leaflet';
 import { MapPin } from 'lucide-react';
 import { Circle, MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import { t } from '../lib/i18n';
 import { categoryMeta, type LngLat, type Post } from '../lib/types';
 
 type Props = {
@@ -106,7 +107,7 @@ export function MapView(props: Props) {
           <div className="crosshair__pin">
             <MapPin size={40} strokeWidth={2} fill="var(--accent)" color="#fff" />
           </div>
-          <div className="crosshair__hint">Drag the map to place your pin</div>
+          <div className="crosshair__hint">{t('map.crosshair')}</div>
         </div>
       )}
     </div>

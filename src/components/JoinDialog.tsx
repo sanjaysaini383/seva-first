@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { HandHelping, MapPin, Star } from 'lucide-react';
+import { t } from '../lib/i18n';
 
 type Props = { onJoin: (name: string) => Promise<void>; onBrowse: () => void };
 
 const STEPS = [
-  { icon: MapPin, title: 'Post a request or offer', text: 'Pin it to your street, visible to neighbours nearby.' },
-  { icon: HandHelping, title: 'A neighbour steps in', text: 'They claim it and you coordinate in a private thread.' },
-  { icon: Star, title: 'Close the loop', text: 'Mark it done and send kudos to the person who helped.' },
-];
+  { icon: MapPin, title: 'join.s1t', text: 'join.s1x' },
+  { icon: HandHelping, title: 'join.s2t', text: 'join.s2x' },
+  { icon: Star, title: 'join.s3t', text: 'join.s3x' },
+] as const;
 
 export function JoinDialog({ onJoin, onBrowse }: Props) {
   const [name, setName] = useState('');
@@ -22,7 +23,7 @@ export function JoinDialog({ onJoin, onBrowse }: Props) {
     try {
       await onJoin(name.trim());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not join');
+      setError(err instanceof Error ? err.message : t('join.failed'));
     } finally {
       setBusy(false);
     }
@@ -35,8 +36,8 @@ export function JoinDialog({ onJoin, onBrowse }: Props) {
           <img src="/hearth.svg" alt="" className="join__logo" />
           <span>Hearth</span>
         </div>
-        <h1 id="join-title">Help is closer than you think.</h1>
-        <p className="join__tag">Ask your neighbours for a hand, or lend one: a ladder, a ride, a meal, ten minutes of tech help.</p>
+        <h1 id="join-title">{t('join.headline')}</h1>
+        <p className="join__tag">{t('join.tag')}</p>
         <ul className="join__how">
           {STEPS.map(({ icon: Icon, title, text }) => (
             <li key={title}>
@@ -44,32 +45,32 @@ export function JoinDialog({ onJoin, onBrowse }: Props) {
                 <Icon size={16} />
               </span>
               <div>
-                <strong>{title}</strong>
-                <span>{text}</span>
+                <strong>{t(title)}</strong>
+                <span>{t(text)}</span>
               </div>
             </li>
           ))}
         </ul>
         <label className="join__label" htmlFor="join-name">
-          Your first name
+          {t('join.label')}
         </label>
         <input
           id="join-name"
           className="input input--lg"
           autoFocus
-          placeholder="e.g. Priya"
+          placeholder={t('join.ph')}
           maxLength={40}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         {error && <div className="join__err">{error}</div>}
         <button className="btn btn--primary btn--block btn--lg" disabled={busy || !name.trim()}>
-          {busy ? 'Joining…' : 'Continue'}
+          {busy ? t('join.joining') : t('join.continue')}
         </button>
         <button type="button" className="btn btn--ghost btn--block" onClick={onBrowse}>
-          Browse without joining
+          {t('join.browse')}
         </button>
-        <p className="join__fine">No email or password. Only your first name is shown to neighbours.</p>
+        <p className="join__fine">{t('join.fine')}</p>
       </form>
     </div>
   );

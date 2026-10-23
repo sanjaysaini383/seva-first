@@ -1,5 +1,6 @@
 import type { PulseRow } from '../lib/api';
-import { CATEGORIES, type Category } from '../lib/types';
+import { t } from '../lib/i18n';
+import { CATEGORIES, catLabel, type Category } from '../lib/types';
 
 type Props = {
   rows: PulseRow[];
@@ -17,17 +18,17 @@ export function PulseBar({ rows, doneThisWeek, active, onPick }: Props) {
     <section className="pulse">
       <div className="kpis">
         <div className="kpi">
-          <div className="kpi__label">Open nearby</div>
+          <div className="kpi__label">{t('pulse.open')}</div>
           <div className="kpi__value">{total}</div>
         </div>
         <div className="kpi">
-          <div className="kpi__label">Helped this week</div>
+          <div className="kpi__label">{t('pulse.helped')}</div>
           <div className="kpi__value kpi__value--accent">{doneThisWeek ?? '–'}</div>
         </div>
       </div>
-      <div className="cats" role="list" aria-label="Filter by category">
+      <div className="cats" role="list" aria-label={t('pulse.filterLabel')}>
         <button className={`cat ${active === 'all' ? 'cat--on' : ''}`} onClick={() => onPick('all')}>
-          All
+          {t('filters.all')}
         </button>
         {CATEGORIES.map((c) => {
           const n = byCat.get(c.id) ?? 0;
@@ -39,7 +40,7 @@ export function PulseBar({ rows, doneThisWeek, active, onPick }: Props) {
               className={`cat ${active === c.id ? 'cat--on' : ''}`}
               style={{ ['--accent-cat' as string]: c.color, ['--fill' as string]: `${(n / max) * 100}%` }}
               onClick={() => onPick(active === c.id ? 'all' : c.id)}
-              title={`${c.label}: ${n} open`}
+              title={t('pulse.catTitle', { label: catLabel(c.id), n })}
             >
               <Icon size={14} strokeWidth={2} />
               <span className="cat__n">{n}</span>

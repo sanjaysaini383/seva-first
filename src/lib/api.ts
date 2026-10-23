@@ -1,6 +1,7 @@
 import { AppwriteException, ID, Operator, Permission, Query, Role } from 'appwrite';
 import { config, tablesDB, TABLES } from './appwrite';
 import { logEvent, prettyQuery, track } from './inspector';
+import { t } from './i18n';
 import type { Category, Kind, Kudos, LngLat, Message, Post, Urgency } from './types';
 
 const databaseId = config.databaseId;
@@ -157,8 +158,8 @@ export async function claimPost(postId: string, me: Me): Promise<void> {
     const fresh = await track('getRow', TABLES.posts, [`rowId: ${postId}`, `transactionId: ${transactionId}`], () =>
       tablesDB.getRow<Post>({ databaseId, tableId: TABLES.posts, rowId: postId, transactionId }),
     );
-    if (fresh.status !== 'open') throw new ClaimConflict(`${fresh.helperName ?? 'Someone'} is already on it.`);
-    if (fresh.authorId === me.id) throw new ClaimConflict("That's your own post.");
+    if (fresh.status !== 'open') throw new ClaimConflict(t('conflict.taken', { name: fresh.helperName ?? t('conflict.someone') }));
+    if (fresh.authorId === me.id) throw new ClaimConflict(t('conflict.own'));
 
     await track('updateRow', TABLES.posts, ['status: claimed', `helper: ${me.name}`, '(staged)'], () =>
       tablesDB.updateRow({
@@ -174,7 +175,7 @@ export async function claimPost(postId: string, me: Me): Promise<void> {
         databaseId,
         tableId: TABLES.messages,
         rowId: ID.unique(),
-        data: { post: postId, authorId: me.id, authorName: me.name, body: `${me.name} offered to help`, system: true },
+        data: { post: postId, authorId: me.id, authorName: me.name, body: t('sys.offered', { name: me.name }), system: true },
         transactionId,
       }),
     );
@@ -183,7 +184,7 @@ export async function claimPost(postId: string, me: Me): Promise<void> {
     await tablesDB.updateTransaction({ transactionId, rollback: true }).catch(() => undefined);
     logEvent('updateTransaction', '—', ['rollback: true'], 'claim rolled back');
     if (err instanceof AppwriteException && err.code === 409) {
-      throw new ClaimConflict('Someone claimed this a moment before you did.');
+      throw new ClaimConflict(t('conflict.race'));
     }
     throw err;
   }
@@ -198,7 +199,7 @@ export async function releasePost(postId: string, me: Me) {
       data: { status: 'open', helperId: null, helperName: null },
     }),
   );
-  await sendSystem(postId, me, `${me.name} stepped back. This is open again.`);
+  await sendSystem(postId, me, t('sys.stepBack', { name: me.name }));
 }
 
 async function sendSystem(postId: string, me: Me, body: string) {
@@ -251,7 +252,7 @@ export async function completePost(post: Post, me: Me, points: number, note: str
         post: post.$id,
         authorId: me.id,
         authorName: me.name,
-        body: `${me.name} marked this done and thanked ${post.helperName} (${points}/5)${note ? `: “${note}”` : ''}`,
+        body: t('sys.done', { name: me.name, helper: post.helperName ?? '', points }) + (note ? `: “${note}”` : ''),
         system: true,
       },
     },

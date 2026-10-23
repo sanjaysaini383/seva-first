@@ -1,6 +1,7 @@
 import { Heart, MessageCircle } from 'lucide-react';
 import { distanceKm, formatDistance, timeAgo } from '../lib/format';
-import { categoryMeta, type LngLat, type Post } from '../lib/types';
+import { t } from '../lib/i18n';
+import { catLabel, categoryMeta, type LngLat, type Post } from '../lib/types';
 import { Avatar } from './Avatar';
 
 type Props = { post: Post; origin: LngLat; selected: boolean; fresh: boolean; onSelect: () => void };
@@ -19,10 +20,10 @@ export function PostCard({ post, origin, selected, fresh, onSelect }: Props) {
       </div>
       <div className="card__main">
         <div className="card__meta">
-          <span className={`kind kind--${post.kind}`}>{post.kind === 'request' ? 'Request' : 'Offer'}</span>
-          <span className="card__cat">{meta.label}</span>
-          {post.urgency === 'high' && post.status === 'open' && <span className="badge badge--urgent">Urgent</span>}
-          {post.status !== 'open' && <span className={`badge badge--${post.status}`}>{post.status === 'done' ? 'Completed' : 'In progress'}</span>}
+          <span className={`kind kind--${post.kind}`}>{t(`kind.${post.kind}` as const)}</span>
+          <span className="card__cat">{catLabel(post.category)}</span>
+          {post.urgency === 'high' && post.status === 'open' && <span className="badge badge--urgent">{t('badge.urgent')}</span>}
+          {post.status !== 'open' && <span className={`badge badge--${post.status}`}>{t(`status.${post.status}` as const)}</span>}
           <span className="card__dist">{formatDistance(distanceKm(origin, post.location))}</span>
         </div>
         <div className="card__title">{post.title}</div>

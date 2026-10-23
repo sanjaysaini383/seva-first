@@ -40,7 +40,7 @@
   --r-lg: 12px;
   --r-xl: 16px;
 
-  --font: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font: 'Geist', 'Noto Sans Bengali', 'Noto Sans Devanagari', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'Geist Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
   color-scheme: light;
 }
@@ -227,6 +227,46 @@ svg {
   100% {
     box-shadow: 0 0 0 6px rgb(22 163 74 / 0%);
   }
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lang {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.lang:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.lang select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+
+.lang select option {
+  color: #18181b;
 }
 
 .me {

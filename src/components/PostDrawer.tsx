@@ -12,7 +12,8 @@ import {
   type Me,
 } from '../lib/api';
 import { distanceKm, formatDistance, timeAgo, timeLeft } from '../lib/format';
-import { categoryMeta, type LngLat, type Message, type Post, type Status } from '../lib/types';
+import { t } from '../lib/i18n';
+import { catLabel, categoryMeta, type LngLat, type Message, type Post } from '../lib/types';
 import { Avatar } from './Avatar';
 
 type Props = {
@@ -26,8 +27,6 @@ type Props = {
   onFocus: (at: LngLat) => void;
   toast: (msg: string, tone?: 'ok' | 'warn' | 'err') => void;
 };
-
-const STATUS_LABEL: Record<Status, string> = { open: 'Open', claimed: 'In progress', done: 'Completed' };
 
 const hearted = (id: string) => {
   try {
@@ -66,7 +65,7 @@ export function PostDrawer({ postId, livePost, me, origin, bus, onClose, onRequi
         setFetched(post);
         setMessages(messages);
       })
-      .catch(() => alive && toast('Could not load this post.', 'err'));
+      .catch(() => alive && toast(t('drawer.loadFailed'), 'err'));
     return () => {
       alive = false;
     };
@@ -92,7 +91,7 @@ export function PostDrawer({ postId, livePost, me, origin, bus, onClose, onRequi
   if (!post) {
     return (
       <aside className="drawer">
-        <div className="drawer__loading">Loading post…</div>
+        <div className="drawer__loading">{t('drawer.loading')}</div>
       </aside>
     );
   }
@@ -111,7 +110,7 @@ export function PostDrawer({ postId, livePost, me, origin, bus, onClose, onRequi
       if (ok) toast(ok, 'ok');
     } catch (err) {
       if (err instanceof ClaimConflict) toast(err.message, 'warn');
-      else toast(err instanceof Error ? err.message : 'Something went wrong', 'err');
+      else toast(err instanceof Error ? err.message : t('drawer.error'), 'err');
     } finally {
       setBusy(null);
     }
@@ -140,20 +139,20 @@ export function PostDrawer({ postId, livePost, me, origin, bus, onClose, onRequi
   return (
     <aside className="drawer" style={{ ['--accent-cat' as string]: meta.color }}>
       <header className="drawer__head">
-        <button className="icon-btn" onClick={onClose} aria-label="Back to list" title="Back">
+        <button className="icon-btn" onClick={onClose} aria-label={t('drawer.back')} title={t('drawer.back')}>
           <ArrowLeft size={17} />
         </button>
         <div className="drawer__crumbs">
-          <span className={`kind kind--${post.kind}`}>{post.kind === 'request' ? 'Request' : 'Offer'}</span>
-          <span className={`badge badge--${post.status}`}>{STATUS_LABEL[post.status]}</span>
-          {post.urgency === 'high' && post.status === 'open' && <span className="badge badge--urgent">Urgent</span>}
+          <span className={`kind kind--${post.kind}`}>{t(`kind.${post.kind}` as const)}</span>
+          <span className={`badge badge--${post.status}`}>{t(`status.${post.status}` as const)}</span>
+          {post.urgency === 'high' && post.status === 'open' && <span className="badge badge--urgent">{t('badge.urgent')}</span>}
           {left && (
             <span className="drawer__left">
               <Clock size={12} /> {left}
             </span>
           )}
         </div>
-        <button className="icon-btn" onClick={() => onFocus(post.location)} aria-label="Show on map" title="Show on map">
+        <button className="icon-btn" onClick={() => onFocus(post.location)} aria-label={t('drawer.showOnMap')} title={t('drawer.showOnMap')}>
           <LocateFixed size={16} />
         </button>
       </header>
@@ -164,7 +163,7 @@ export function PostDrawer({ postId, livePost, me, origin, bus, onClose, onRequi
             <Icon size={22} strokeWidth={2} />
           </div>
           <div className="drawer__heading">
-            <div className="drawer__cat">{meta.label}</div>
+            <div className="drawer__cat">{catLabel(post.category)}</div>
             <h2 className="drawer__title">{post.title}</h2>
           </div>
         </div>
@@ -176,7 +175,7 @@ export function PostDrawer({ postId, livePost, me, origin, bus, onClose, onRequi
           <span>{timeAgo(post.$createdAt)}</span>
           <span className="dot">·</span>
           <span>
-            <MapPin size={12} /> {formatDistance(distanceKm(origin, post.location))} away
+            <MapPin size={12} /> {t('drawer.away', { d: formatDistance(distanceKm(origin, post.location)) })}
           </span>
         </div>
 
@@ -184,22 +183,22 @@ export function PostDrawer({ postId, livePost, me, origin, bus, onClose, onRequi
 
         <div className="drawer__actions">
           {post.status === 'open' && !isAuthor && (
-            <button className="btn btn--primary" disabled={!!busy} onClick={() => run('claim', () => claimPost(post.$id, me!), 'You’re helping with this. They’ve been notified.')}>
+            <button className="btn btn--primary" disabled={!!busy} onClick={() => run('claim', () => claimPost(post.$id, me!), t('drawer.claimed'))}>
               <HandHelping size={16} />
-              {busy === 'claim' ? 'Claiming…' : post.kind === 'request' ? 'I can help' : 'Request this'}
+              {busy === 'claim' ? t('drawer.claiming') : post.kind === 'request' ? t('drawer.claim') : t('drawer.request')}
             </button>
           )}
           {post.status === 'claimed' && isHelper && (
             <button className="btn" disabled={!!busy} onClick={() => run('release', () => releasePost(post.$id, me!))}>
-              <Undo2 size={15} /> Step back
+              <Undo2 size={15} /> {t('drawer.stepBack')}
             </button>
           )}
           {post.status === 'claimed' && isAuthor && !thanking && (
             <button className="btn btn--primary" onClick={() => setThanking(true)}>
-              <CircleCheck size={16} /> Mark as done
+              <CircleCheck size={16} /> {t('drawer.markDone')}
             </button>
           )}
-          <button className={`btn ${liked ? 'btn--liked' : ''}`} onClick={onHeart} title={liked ? 'You appreciated this' : 'Appreciate'} aria-pressed={liked}>
+          <button className={`btn ${liked ? 'btn--liked' : ''}`} onClick={onHeart} title={liked ? t('drawer.appreciated') : t('drawer.appreciate')} aria-pressed={liked}>
             <Heart size={15} fill={liked ? 'currentColor' : 'none'} /> {post.hearts}
           </button>
           {/* Deletion is allowed until a neighbour engages; after that the thread
@@ -208,10 +207,10 @@ export function PostDrawer({ postId, livePost, me, origin, bus, onClose, onRequi
             <button
               className="icon-btn icon-btn--danger"
               disabled={!!busy}
-              title="Delete post"
-              aria-label="Delete post"
+              title={t('drawer.delete')}
+              aria-label={t('drawer.delete')}
               onClick={() => {
-                if (confirm('Delete this post?')) run('delete', () => deletePost(post.$id), 'Post deleted.').then(onClose);
+                if (confirm(t('drawer.deleteConfirm'))) run('delete', () => deletePost(post.$id), t('drawer.deleted')).then(onClose);
               }}
             >
               <Trash2 size={16} />
@@ -223,8 +222,8 @@ export function PostDrawer({ postId, livePost, me, origin, bus, onClose, onRequi
           <div className="helper-banner">
             <Avatar id={post.helperId!} name={post.helperName} size={28} />
             <div>
-              <strong>{isHelper ? 'You’re helping' : `${post.helperName} is helping`}</strong>
-              <span>{isAuthor ? 'Mark it as done once you’re sorted.' : 'Coordinate the details in the conversation below.'}</span>
+              <strong>{isHelper ? t('drawer.youHelping') : t('drawer.otherHelping', { name: post.helperName })}</strong>
+              <span>{isAuthor ? t('drawer.authorHint') : t('drawer.helperHint')}</span>
             </div>
           </div>
         )}
@@ -234,36 +233,36 @@ export function PostDrawer({ postId, livePost, me, origin, bus, onClose, onRequi
             className="thank"
             onSubmit={(e) => {
               e.preventDefault();
-              run('complete', () => completePost(post, me!, stars, note.trim()), `Kudos sent to ${post.helperName}.`).then(() =>
+              run('complete', () => completePost(post, me!, stars, note.trim()), t('drawer.kudosSent', { name: post.helperName ?? '' })).then(() =>
                 setThanking(false),
               );
             }}
           >
-            <div className="thank__title">Rate {post.helperName}’s help</div>
+            <div className="thank__title">{t('drawer.rate', { name: post.helperName ?? '' })}</div>
             <div className="stars" role="radiogroup" aria-label="Kudos">
               {[1, 2, 3, 4, 5].map((n) => (
-                <button type="button" key={n} className={n <= stars ? 'on' : ''} onClick={() => setStars(n)} aria-label={`${n} of 5`}>
+                <button type="button" key={n} className={n <= stars ? 'on' : ''} onClick={() => setStars(n)} aria-label={t('drawer.of5', { n })}>
                   <Star size={24} fill="currentColor" strokeWidth={1.5} />
                 </button>
               ))}
             </div>
-            <input className="input" placeholder="Add a thank-you note (optional)" maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} />
+            <input className="input" placeholder={t('drawer.note')} maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} />
             <div className="thank__row">
-              <span className="thank__hint">Commits post, kudos and message as one transaction.</span>
+              <span className="thank__hint">{t('drawer.saveHint')}</span>
               <button type="button" className="btn btn--ghost" onClick={() => setThanking(false)}>
-                Cancel
+                {t('drawer.cancel')}
               </button>
               <button className="btn btn--primary" disabled={busy === 'complete'}>
-                {busy === 'complete' ? 'Saving…' : 'Complete'}
+                {busy === 'complete' ? t('drawer.saving') : t('drawer.complete')}
               </button>
             </div>
           </form>
         )}
 
         <div className="thread" ref={threadRef}>
-          <div className="section-label">Conversation</div>
-          {messages === null && <div className="thread__empty">Loading conversation…</div>}
-          {messages?.length === 0 && <div className="thread__empty">No messages yet. Start the conversation.</div>}
+          <div className="section-label">{t('drawer.conversation')}</div>
+          {messages === null && <div className="thread__empty">{t('drawer.loadingThread')}</div>}
+          {messages?.length === 0 && <div className="thread__empty">{t('drawer.noMessages')}</div>}
           {messages?.map((m) =>
             m.system ? (
               <div key={m.$id} className="msg msg--system">
@@ -287,13 +286,13 @@ export function PostDrawer({ postId, livePost, me, origin, bus, onClose, onRequi
       <form className="composer" onSubmit={onSend}>
         <input
           className="input"
-          placeholder={me ? 'Write a message…' : 'Join to reply'}
+          placeholder={me ? t('drawer.write') : t('drawer.joinToReply')}
           value={draft}
           maxLength={1000}
           onChange={(e) => setDraft(e.target.value)}
           onFocus={() => !me && onRequireJoin()}
         />
-        <button className="btn btn--primary btn--icon" disabled={!draft.trim() || busy === 'send'} aria-label="Send">
+        <button className="btn btn--primary btn--icon" disabled={!draft.trim() || busy === 'send'} aria-label={t('drawer.send')}>
           <Send size={16} />
         </button>
       </form>

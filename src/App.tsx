@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CircleAlert, CircleCheck, Inbox, LocateFixed, Plus, Search, Sprout, Star, TriangleAlert } from 'lucide-react';
+import { CircleAlert, CircleCheck, Inbox, Languages, LocateFixed, Plus, Search, Sprout, Star, TriangleAlert } from 'lucide-react';
 import { ComposeSheet } from './components/ComposeSheet';
 import { Heroes } from './components/Heroes';
 import { Inspector } from './components/Inspector';
@@ -27,6 +27,7 @@ import {
 } from './lib/api';
 import { config, isConfigured } from './lib/appwrite';
 import { distanceKm } from './lib/format';
+import { LANGS, useLang, type Lang } from './lib/i18n';
 import type { Category, Kind, LngLat, Message, Post } from './lib/types';
 
 type Tab = 'nearby' | 'mine' | 'heroes';
@@ -63,6 +64,7 @@ function matches(p: Post, f: Filters) {
 }
 
 export default function App() {
+  const { lang, setLang, t } = useLang();
   const { state, join, leave } = useSession();
   const me = state.status === 'ready' ? state.me : null;
   const dark = usePrefersDark();
@@ -240,9 +242,9 @@ export default function App() {
       setPosts((list) => (list.some((x) => x.$id === post.$id) ? list : [post, ...list]));
       markFresh(post.$id);
       setSelectedId(post.$id);
-      toast('Published. Neighbours nearby can see it now.');
+      toast(t('toast.published'));
     } catch (err) {
-      toast(err instanceof Error ? err.message : 'Could not post', 'err');
+      toast(err instanceof Error ? err.message : t('toast.postFailed'), 'err');
     }
   };
 
@@ -264,22 +266,34 @@ export default function App() {
           <div className="brand">
             <img src="/hearth.svg" alt="" />
             <span className="brand__name">Hearth</span>
-            <span className={`live ${live ? 'live--on' : ''}`} title={live ? 'Realtime connected' : 'Connecting…'}>
-              <i /> {live ? 'Live' : 'Offline'}
+            <span className={`live ${live ? 'live--on' : ''}`} title={live ? t('app.live') : t('app.offline')}>
+              <i /> {live ? t('app.live') : t('app.offline')}
             </span>
           </div>
+          <div className="topbar__right">
+          <label className="lang" title={t('app.language')}>
+            <Languages size={15} />
+            <select value={lang} onChange={(e) => setLang(e.target.value as Lang)} aria-label={t('app.language')}>
+              {LANGS.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
+          </label>
           {me ? (
-            <button className="me" onClick={() => confirm(`Sign out ${me.name}?`) && leave()} title="Sign out">
-              {karma && karma.points > 0 && <span className="me__karma" title="Kudos received">
+            <button className="me" onClick={() => confirm(t('app.signOut', { name: me.name })) && leave()} title={me.name}>
+              {karma && karma.points > 0 && <span className="me__karma" title={t('app.kudosReceived')}>
                   <Star size={12} fill="currentColor" /> {karma.points}
                 </span>}
               <Avatar id={me.id} name={me.name} size={30} />
             </button>
           ) : (
             <button className="btn btn--sm" onClick={requireJoin}>
-              Join
+              {t('app.join')}
             </button>
           )}
+          </div>
         </header>
 
         {selectedId ? (
@@ -300,9 +314,9 @@ export default function App() {
         ) : (
           <>
             <nav className="tabs">
-              {(['nearby', 'mine', 'heroes'] as Tab[]).map((t) => (
-                <button key={t} className={tab === t ? 'on' : ''} onClick={() => (t === 'mine' && !me ? requireJoin() : setTab(t))}>
-                  {t === 'nearby' ? 'Nearby' : t === 'mine' ? 'My activity' : 'Heroes'}
+              {(['nearby', 'mine', 'heroes'] as Tab[]).map((tb) => (
+                <button key={tb} className={tab === tb ? 'on' : ''} onClick={() => (tb === 'mine' && !me ? requireJoin() : setTab(tb))}>
+                  {t(`tabs.${tb}`)}
                 </button>
               ))}
             </nav>
@@ -310,8 +324,8 @@ export default function App() {
             {tab === 'heroes' ? (
               <div className="scroll">
                 <div className="section-head">
-                  <div className="section-label">Neighbourhood heroes</div>
-                  <p className="section-note">Ranked by kudos received. Aggregated in TablesDB with groupBy and sum.</p>
+                  <div className="section-label">{t('heroes.title')}</div>
+                  <p className="section-note">{t('heroes.note')}</p>
                 </div>
                 <Heroes heroes={heroList} meId={me?.id} />
               </div>
@@ -323,13 +337,13 @@ export default function App() {
                     <div className="filters">
                       <div className="search">
                         <Search size={15} />
-                        <input className="input" placeholder="Search posts" value={search} onChange={(e) => setSearch(e.target.value)} />
+                        <input className="input" placeholder={t('filters.search')} value={search} onChange={(e) => setSearch(e.target.value)} />
                       </div>
                       <div className="filters__row">
                         <div className="seg seg--sm">
                           {(['all', 'request', 'offer'] as const).map((k) => (
                             <button key={k} className={kind === k ? 'on' : ''} onClick={() => setKind(k)}>
-                              {k === 'all' ? 'All' : k === 'request' ? 'Requests' : 'Offers'}
+                              {k === 'all' ? t('filters.all') : k === 'request' ? t('filters.requests') : t('filters.offers')}
                             </button>
                           ))}
                         </div>
@@ -339,24 +353,24 @@ export default function App() {
                         </label>
                       </div>
                       <label className="toggle">
-                        <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} /> Show completed
+                        <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} /> {t('filters.showDone')}
                       </label>
                     </div>
                   </>
                 )}
                 <div className="scroll feed">
-                  {loadError && <div className="notice notice--err">Couldn’t reach TablesDB: {loadError}</div>}
+                  {loadError && <div className="notice notice--err">{t('feed.loadError', { error: loadError })}</div>}
                   {loading && !visible.length && !loadError && [0, 1, 2].map((i) => <div key={i} className="card card--skeleton" />)}
                   {!loading && !visible.length && !loadError && (
                     <div className="empty">
                       <div className="empty__icon">{tab === 'mine' ? <Sprout size={22} /> : <Inbox size={22} />}</div>
                       <p>
                         {tab === 'mine'
-                          ? 'No activity yet. Publish a post or offer to help a neighbour.'
-                          : 'No posts in this area. Widen the radius or publish the first one.'}
+                          ? t('empty.mine')
+                          : t('empty.nearby')}
                       </p>
                       <button className="btn btn--primary" onClick={startCompose}>
-                        <Plus size={16} /> New post
+                        <Plus size={16} /> {t('action.newPost')}
                       </button>
                     </div>
                   )}
@@ -386,13 +400,13 @@ export default function App() {
 
       <div className="map-actions">
         {myLocation && (
-          <button className="fab fab--sm" onClick={() => setFlyTo({ at: myLocation, seq: Date.now() })} title="Back to my location" aria-label="Back to my location">
+          <button className="fab fab--sm" onClick={() => setFlyTo({ at: myLocation, seq: Date.now() })} title={t('action.myLocation')} aria-label={t('action.myLocation')}>
             <LocateFixed size={18} />
           </button>
         )}
         {!composing && (
           <button className="fab" onClick={startCompose}>
-            <Plus size={18} strokeWidth={2.5} /> New post
+            <Plus size={18} strokeWidth={2.5} /> {t('action.newPost')}
           </button>
         )}
       </div>
@@ -400,10 +414,10 @@ export default function App() {
       <Inspector open={inspectorOpen} onToggle={() => setInspectorOpen((o) => !o)} />
 
       <div className="toasts" aria-live="polite">
-        {toasts.map((t) => (
-          <div key={t.id} className={`toast toast--${t.tone}`}>
-            {t.tone === 'ok' ? <CircleCheck size={16} /> : t.tone === 'warn' ? <TriangleAlert size={16} /> : <CircleAlert size={16} />}
-            {t.msg}
+        {toasts.map((ts) => (
+          <div key={ts.id} className={`toast toast--${ts.tone}`}>
+            {ts.tone === 'ok' ? <CircleCheck size={16} /> : ts.tone === 'warn' ? <TriangleAlert size={16} /> : <CircleAlert size={16} />}
+            {ts.msg}
           </div>
         ))}
       </div>
@@ -412,7 +426,7 @@ export default function App() {
         <JoinDialog
           onJoin={async (name) => {
             await join(name);
-            toast(`Welcome, ${name}.`);
+            toast(t('toast.welcome', { name }));
           }}
           onBrowse={() => {
             setJoinOpen(false);

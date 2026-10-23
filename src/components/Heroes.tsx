@@ -1,5 +1,6 @@
 import { Star, Trophy } from 'lucide-react';
 import type { Hero } from '../lib/api';
+import { t } from '../lib/i18n';
 import { Avatar } from './Avatar';
 
 export function Heroes({ heroes, meId }: { heroes: Hero[]; meId?: string }) {
@@ -9,7 +10,7 @@ export function Heroes({ heroes, meId }: { heroes: Hero[]; meId?: string }) {
         <div className="empty__icon">
           <Trophy size={22} />
         </div>
-        <p>No kudos yet. Help a neighbour, and when they mark it done you'll appear here.</p>
+        <p>{t('heroes.empty')}</p>
       </div>
     );
   }
@@ -23,7 +24,7 @@ export function Heroes({ heroes, meId }: { heroes: Hero[]; meId?: string }) {
           <div className="hero__main">
             <div className="hero__name">
               {h.toName}
-              {h.toId === meId && <span className="badge">You</span>}
+              {h.toId === meId && <span className="badge">{t('heroes.you')}</span>}
             </div>
             <div className="hero__bar">
               <span style={{ width: `${(h.points / top) * 100}%` }} />
@@ -34,7 +35,7 @@ export function Heroes({ heroes, meId }: { heroes: Hero[]; meId?: string }) {
               <Star size={13} fill="currentColor" /> {h.points}
             </strong>
             <span>
-              {h.helps} help{h.helps === 1 ? '' : 's'}
+              {h.helps === 1 ? t('heroes.help') : t('heroes.helps', { n: h.helps })}
             </span>
           </div>
         </li>

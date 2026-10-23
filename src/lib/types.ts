@@ -14,6 +14,7 @@ import {
   Wrench,
   type LucideIcon,
 } from 'lucide-react';
+import { t, type Key } from './i18n';
 
 export type Kind = 'request' | 'offer';
 export type Status = 'open' | 'claimed' | 'done';
@@ -85,3 +86,6 @@ export const CATEGORIES: { id: Category; label: string; icon: LucideIcon; color:
 ];
 
 export const categoryMeta = (id: Category) => CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[CATEGORIES.length - 1];
+
+/** Category name in the current interface language. */
+export const catLabel = (id: Category) => t(`cat.${id}` as Key);

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Gift, HandHelping, MapPin, X } from 'lucide-react';
 import type { NewPost } from '../lib/api';
-import { CATEGORIES, type Category, type Kind, type LngLat, type Urgency } from '../lib/types';
+import { t, type Key } from '../lib/i18n';
+import { CATEGORIES, catLabel, type Category, type Kind, type LngLat, type Urgency } from '../lib/types';
 
 type Props = {
   pin: LngLat;
@@ -9,17 +10,9 @@ type Props = {
   onSubmit: (p: NewPost) => Promise<void>;
 };
 
-const EXPIRY = [
-  { h: 3, label: '3 hours' },
-  { h: 24, label: '24 hours' },
-  { h: 72, label: '3 days' },
-  { h: 168, label: 'A week' },
-];
+const EXPIRY = [3, 24, 72, 168] as const;
 
-const PROMPTS: Record<Kind, string> = {
-  request: 'e.g. Need to borrow a drill for 20 minutes',
-  offer: 'e.g. Extra homemade dal for 2 people',
-};
+const PROMPTS: Record<Kind, Key> = { request: 'compose.titleReq', offer: 'compose.titleOffer' };
 
 export function ComposeSheet({ pin, onCancel, onSubmit }: Props) {
   const [kind, setKind] = useState<Kind>('request');
@@ -45,25 +38,25 @@ export function ComposeSheet({ pin, onCancel, onSubmit }: Props) {
     <form className="sheet" onSubmit={submit}>
       <div className="sheet__head">
         <div>
-          <h2>New post</h2>
-          <p>Visible to neighbours within their search radius.</p>
+          <h2>{t('compose.title')}</h2>
+          <p>{t('compose.sub')}</p>
         </div>
-        <button type="button" className="icon-btn" onClick={onCancel} aria-label="Cancel">
+        <button type="button" className="icon-btn" onClick={onCancel} aria-label={t('compose.cancel')}>
           <X size={17} />
         </button>
       </div>
 
       <div className="seg">
         <button type="button" className={kind === 'request' ? 'on' : ''} onClick={() => setKind('request')}>
-          <HandHelping size={16} /> I need help
+          <HandHelping size={16} /> {t('compose.need')}
         </button>
         <button type="button" className={kind === 'offer' ? 'on' : ''} onClick={() => setKind('offer')}>
-          <Gift size={16} /> I can offer
+          <Gift size={16} /> {t('compose.offer')}
         </button>
       </div>
 
       <div className="field">
-        <label>Category</label>
+        <label>{t('compose.category')}</label>
         <div className="chips">
           {CATEGORIES.map((c) => (
             <button
@@ -73,34 +66,34 @@ export function ComposeSheet({ pin, onCancel, onSubmit }: Props) {
               style={{ ['--accent-cat' as string]: c.color }}
               onClick={() => setCategory(c.id)}
             >
-              <c.icon size={14} /> {c.label}
+              <c.icon size={14} /> {catLabel(c.id)}
             </button>
           ))}
         </div>
       </div>
 
       <div className="field">
-        <label htmlFor="title">Title</label>
+        <label htmlFor="title">{t('compose.titleLabel')}</label>
         <input
           id="title"
           className="input"
           autoFocus
           maxLength={120}
-          placeholder={PROMPTS[kind]}
+          placeholder={t(PROMPTS[kind])}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
       </div>
       <div className="field">
         <label htmlFor="body">
-          Details <span className="optional">Optional</span>
+          {t('compose.details')} <span className="optional">{t('compose.optional')}</span>
         </label>
         <textarea
           id="body"
           className="input"
           rows={3}
           maxLength={2000}
-          placeholder="Anything that helps a neighbour say yes"
+          placeholder={t('compose.detailsPh')}
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />
@@ -108,21 +101,21 @@ export function ComposeSheet({ pin, onCancel, onSubmit }: Props) {
 
       <div className="field-row">
         <div className="field">
-          <label>Urgency</label>
+          <label>{t('compose.urgency')}</label>
           <div className="seg seg--sm">
             {(['low', 'normal', 'high'] as Urgency[]).map((u) => (
               <button type="button" key={u} className={urgency === u ? 'on' : ''} onClick={() => setUrgency(u)}>
-                {u === 'high' ? 'High' : u === 'low' ? 'Low' : 'Normal'}
+                {t(`urgency.${u}` as const)}
               </button>
             ))}
           </div>
         </div>
         <div className="field">
-          <label htmlFor="expiry">Expires in</label>
+          <label htmlFor="expiry">{t('compose.expires')}</label>
           <select id="expiry" className="input" value={expiresInHours} onChange={(e) => setExpires(Number(e.target.value))}>
-            {EXPIRY.map((x) => (
-              <option key={x.h} value={x.h}>
-                {x.label}
+            {EXPIRY.map((h) => (
+              <option key={h} value={h}>
+                {t(`exp.${h}` as const)}
               </option>
             ))}
           </select>
@@ -135,12 +128,12 @@ export function ComposeSheet({ pin, onCancel, onSubmit }: Props) {
           <strong>
             {pin[1].toFixed(4)}, {pin[0].toFixed(4)}
           </strong>
-          <span>Move the map to adjust the location</span>
+          <span>{t('compose.pinHint')}</span>
         </div>
       </div>
 
       <button className="btn btn--primary btn--block" disabled={busy || title.trim().length < 3}>
-        {busy ? 'Publishing…' : 'Publish post'}
+        {busy ? t('compose.publishing') : t('compose.publish')}
       </button>
     </form>
   );
