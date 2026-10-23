@@ -1,136 +1,111 @@
 <p align="center"><img src="public/hearth.svg" width="72" alt="Hearth logo" /></p>
 
 <h1 align="center">Hearth</h1>
-<p align="center"><b>Your neighbourhood on a live map.</b><br/>Ask for a hand or lend one: a ladder, a ride, a meal, ten minutes of tech help.</p>
-<p align="center"><a href="docs/Hearth-pitch-deck.pptx">Pitch deck (.pptx)</a></p>
-<p align="center">Built solo for the <a href="https://hackathon.appwrite.io">Appwrite Databases Hackathon</a> (Oct 19–31, 2026) on <b>Appwrite TablesDB</b>.</p>
+<p align="center"><b>Neighbourhood help, on a live map, in Bengali, Hindi and English.</b><br/>Ask for a hand or lend one: a boat in a flood, medicine, drinking water, a meal, a ride.</p>
+<p align="center">Entry for the <a href="https://sficeast.wb.gov.in/en">Seva First Innovation Challenge (Eastern Region)</a>. Themes: Disaster Management & Community Safety · Climate & Flood Resilience · Urban & Civic Innovation · Village & Panchayat Innovation.</p>
 
-<p align="center"><img src="docs/screenshot-map.png" alt="Hearth: nearby posts on a live map with the neighbourhood pulse" width="100%" /></p>
+<p align="center"><img src="docs/screenshot-map.png" alt="Hearth: open requests and offers on a live neighbourhood map" width="100%" /></p>
 
 ---
 
-## Why Hearth
+## The problem
 
-Most people would help a neighbour if they knew someone needed it. Most people needing help would rather not post in a 400-person WhatsApp group. Hearth sits in between. You drop a pin with a small ask ("need a drill for 20 minutes") or an offer ("extra biryani, 3 portions"). Neighbours inside your radius see it appear live. One taps **I can help**, you chat, and when it's done you send them kudos. Kudos add up to a neighbourhood **Heroes** board.
+Every monsoon, waterlogging in Kolkata and floods across West Bengal, Bihar and Jharkhand cut people off from basic help: a boat to reach the main road, insulin when the pharmacy is shut, clean drinking water, a dry room for the night. The help usually exists a few streets away. What's missing is a simple way to **ask, see who nearby needs what, and coordinate** without anyone being missed or two volunteers turning up for the same request.
 
-No email, no feed algorithm, no followers. Just a first name and a map.
+The same gap exists on ordinary days: an elderly neighbour who needs medicine picked up, a family who needs a lift to the hospital. Today these requests get lost in WhatsApp groups with hundreds of members.
 
-## What makes it interesting technically
+## The solution
 
-Hearth is built to use as much of **Appwrite TablesDB** as a real product would, not just CRUD:
+Hearth is a free, mobile-friendly web app. No install, no email, just a first name.
 
-| TablesDB feature | Where Hearth uses it |
+1. **Post a request or an offer**, pinned to your street, in your own language.
+2. **Neighbours nearby see it instantly** on a live map, filtered by distance and category.
+3. **One neighbour taps "I can help".** Claims are race-safe: if two people tap at the same moment, only one succeeds, so nobody is double-booked.
+4. **Coordinate in a thread** attached to the post.
+5. **Mark it done and send kudos.** Kudos roll up into a neighbourhood Heroes board that recognises active volunteers.
+
+### Built for emergencies
+
+- **Emergency categories first:** Rescue / boat, Medicine, Drinking water, Shelter.
+- **Emergency mode:** one tap shows only open emergency posts, most urgent first.
+- **Urgency levels** with a pulsing marker for high-urgency requests.
+- **Live counts** of open and emergency posts nearby, and help completed this week.
+
+### Built for the region
+
+- **Bengali, Hindi and English** throughout the interface, switchable at any time and remembered on the device. Posts can be written in any language.
+- **Runs in any modern mobile browser**; no app store or install needed.
+- **Free map data** (OpenStreetMap) and no paid APIs, so running costs stay low.
+
+📄 **The full Innovation & Implementation Plan** (problem, location, beneficiaries, cost, timeline, impact, scalability) is in [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md).
+
+## How it works (technology)
+
+Hearth is a React web app backed by [Appwrite](https://appwrite.io) Cloud. There is no custom server to maintain; Appwrite handles data, permissions, sign-in and live updates.
+
+| Need | How Hearth handles it |
 | --- | --- |
-| **Point column + spatial index** | Every post has a `location` point. The feed is a `Query.distanceLessThan('location', center, meters, true)` radius search, computed by the database. |
-| **Full-text index** | Title search uses `Query.search('title', …)` on a `fulltext` index. |
-| **Enums, varchar, text, datetime, integer columns** | Typed schema for kind / category / status / urgency, plus expiry timestamps and counters with `min: 0`. |
-| **Compound key index** | `status + $createdAt` backs the main "open posts, newest first" query. |
-| **One-to-many relationships** | `posts → messages` (cascade delete, so a post never leaves an orphaned thread) and `posts → kudos` (set-null: kudos outlive a post). Threads load in a single call via `Query.select(['*', 'messages.*'])`. |
-| **Transactions** | **Claiming** reads the post inside a transaction, stages the claim and a system message, then commits. If two neighbours tap *I can help* at the same moment, the second commit hits a conflict and nothing is applied, so the UI says "someone beat you to it". |
-| **Batch operations (`createOperations`)** | **Completing** a post stages four writes across three tables (post → `done`, a kudos row, a thank-you message, a counter increment) and commits them atomically. |
-| **Atomic counters & operators** | Hearts use `incrementRowColumn`; reply counts use `Operator.increment(1)` inside `updateRow`. No read-modify-write races. |
-| **Aggregations** | The **Neighbourhood Pulse** is `groupBy(['category']) + count()` within the radius. **Heroes** is `groupBy(['toId','toName']) + sum('points') + count()`. Your karma is a filtered `sum`. Both fall back to a narrow `select` + client tally on servers without aggregation. |
-| **Logical queries** | *My activity* is `Query.or([equal('authorId'), equal('helperId')])` on two indexed columns. |
-| **Cheap counts** | "Helped this week" is `equal('status','done') + updatedAfter(7 days) + limit(1)`, which reads only `total`. |
-| **Row security + permissions** | Anyone can read; signed-in users create/claim; only the author holds `delete` on their own post row, and only until a neighbour has replied. Other people's messages are never deletable by the author. |
-| **Realtime** | One websocket subscribes to `tablesdb.hearth.tables.{posts,messages,kudos}.rows`. New pins drop onto the map, threads update, and the pulse/heroes refresh live. |
+| Find help nearby | Every post has a map location; the database returns only posts within the chosen radius (spatial index). |
+| No double-booking | Claiming uses a database transaction. A concurrent second claim is rejected and rolled back. |
+| Nothing half-saved | Completing a post saves the status, kudos and thank-you message together, or none of them. |
+| Live coordination | Realtime updates push new posts, claims and messages to every open screen. |
+| Privacy | Only a first name is shown. No phone number or email is collected, and pins can be placed at street level rather than at a front door. |
+| Accountability | Every post has a thread, a status (open → in progress → completed) and a record of who helped. |
 
-### 🔍 The Query Inspector
-
-Click ** TablesDB** in the corner of the map. Every database call the page makes (queries rendered as the SDK calls that built them, timings, transaction stages, rollbacks, and Realtime pushes) streams into a live panel. This is how you can verify the table above while using the app.
-
-<p align="center"><img src="docs/screenshot-inspector.png" alt="Heroes leaderboard with the Query Inspector open" width="100%" /></p>
-
-<p align="center"><img src="docs/screenshot-dark.png" alt="A completed post and its conversation in dark mode" width="100%" /></p>
-
-## Architecture
-
-```
-Browser (React + Leaflet)
-  │  appwrite web SDK
-  ├── Account ............ anonymous session + display name
-  ├── TablesDB ........... listRows / getRow / createRow / updateRow /
-  │                        incrementRowColumn / transactions / createOperations
-  └── Realtime ........... rows channel for posts, messages, kudos
-                               │
-                      Appwrite Cloud · TablesDB "hearth"
-                      ┌──────────────┐ 1   * ┌──────────────┐
-                      │    posts     │──────▶│   messages   │  (cascade)
-                      │ location:pt  │       └──────────────┘
-                      │ status/kind… │ 1   * ┌──────────────┐
-                      │ hearts/replies│─────▶│    kudos     │  (set null)
-                      └──────────────┘       └──────────────┘
-```
-
-There is no custom backend. Everything is the Appwrite client SDK talking to TablesDB with permissions enforced by Appwrite. The server SDK is only used by the two provisioning scripts.
+The data model is three linked tables (posts, messages, kudos) with eight indexes. It's created by `npm run setup`.
 
 ## Run it yourself
 
-**Requirements:** Node 20.6+ (for `--env-file`) and an [Appwrite Cloud](https://cloud.appwrite.io) project.
+**Requirements:** Node 20.6+ and a free [Appwrite Cloud](https://cloud.appwrite.io) project.
 
-1. **Create a project** in Appwrite Cloud. Under *Overview → Add platform → Web*, add `localhost` (and later your Sites domain).
-2. **Create an API key** (*Overview → API keys*) with the `databases`, `tables`, `columns`, `indexes` and `rows` scopes. It is only used by the setup/seed scripts and never shipped to the browser.
-3. **Configure:**
+1. In Appwrite, create a project. Under *Overview → Add platform → Web*, add `localhost`.
+2. Create an API key (*Overview → API keys*) with the `databases`, `tables`, `columns`, `indexes` and `rows` scopes. It's used only by the setup scripts, never in the browser.
+3. Configure and install:
    ```bash
    cp .env.example .env    # fill in endpoint, project ID and API key
    npm install
    ```
-4. **Create the schema** (idempotent, safe to re-run):
+4. Create the database, check it, and add demo data around Kolkata:
    ```bash
-   npm run setup
+   npm run setup     # tables, relationships, indexes (safe to re-run)
+   npm run smoke     # verifies every database feature the app relies on
+   npm run seed      # a demo neighbourhood with flood-relief and everyday posts
    ```
-5. **Verify** every TablesDB feature against your project (spatial, full-text, relationships, aggregations, transactions incl. a forced conflict, batch ops, cascade):
+5. Start the app:
    ```bash
-   npm run smoke
-   ```
-6. **Seed a neighbourhood** around `VITE_DEFAULT_LAT/LNG`:
-   ```bash
-   npm run seed                  # ~45 posts with threads, claims and kudos
-   npm run seed -- --live-only   # optional: a new neighbour posts every few seconds
-   npm run seed -- --reset       # wipe and reseed
-   ```
-7. **Start:**
-   ```bash
-   npm run dev
+   npm run dev       # http://localhost:5173
    ```
 
-Make sure *Auth → Settings → Anonymous* is enabled (it is by default).
+Make sure *Auth → Settings → Anonymous* is enabled (it is by default). To centre the demo elsewhere, change `VITE_DEFAULT_LAT` / `VITE_DEFAULT_LNG` in `.env` and reseed with `npm run seed -- --reset`.
 
-### Deploy on Appwrite Sites
+### Deploy
 
-*Sites → Create site → Import from GitHub*, select this repo, then set:
+Any static host works (Appwrite Sites, Vercel, Netlify). Build command `npm run build`, output directory `dist`, and set the `VITE_*` variables from `.env.example`. Then add the deployed domain as a Web platform in the Appwrite project.
 
-| Setting | Value |
+## Available scripts
+
+| Command | What it does |
 | --- | --- |
-| Framework | Vite (React) |
-| Install command | `npm install` |
-| Build command | `npm run build` |
-| Output directory | `dist` |
-| Env vars | `VITE_APPWRITE_ENDPOINT`, `VITE_APPWRITE_PROJECT_ID`, `VITE_APPWRITE_DATABASE_ID`, `VITE_DEFAULT_LAT`, `VITE_DEFAULT_LNG` |
-
-Then add the Sites domain as a Web platform in the project.
+| `npm run dev` | Start the app locally |
+| `npm run build` | Type-check and build the production bundle into `dist/` |
+| `npm run setup` | Create the database schema |
+| `npm run seed` | Add demo data (`-- --reset` to wipe first, `-- --live-only` to simulate live activity) |
+| `npm run smoke` | Check every database feature against your project |
 
 ## Tech stack
 
-All open source:
-
-- [Appwrite](https://appwrite.io): TablesDB, Realtime and Auth via [`appwrite`](https://www.npmjs.com/package/appwrite) (web) and [`node-appwrite`](https://www.npmjs.com/package/node-appwrite) (scripts)
-- [React 19](https://react.dev) + [Vite](https://vite.dev) + TypeScript
-- [Leaflet](https://leafletjs.com) + [react-leaflet](https://react-leaflet.js.org) with [OpenStreetMap](https://www.openstreetmap.org) tiles (no API key), themed for light/dark with CSS filters
-- [Lucide](https://lucide.dev) icons
-- Fonts: [Geist and Geist Mono](https://vercel.com/font)
-
-No AI APIs and no paid map APIs.
+All open source: [Appwrite](https://appwrite.io) (database, realtime, auth) · [React 19](https://react.dev) · [Vite](https://vite.dev) · TypeScript · [Leaflet](https://leafletjs.com) with [OpenStreetMap](https://www.openstreetmap.org) · [Lucide](https://lucide.dev) icons · Geist and Noto Sans Bengali / Devanagari fonts.
 
 ## Project layout
 
 ```
-scripts/setup.mjs     schema: tables, columns, relationships, indexes
-scripts/seed.mjs      demo neighbourhood + live activity simulator
-src/lib/api.ts        every TablesDB query, transaction and aggregate
-src/lib/inspector.ts  call log behind the Query Inspector
-src/hooks/            session (anonymous auth) and Realtime subscription
-src/components/       map, feed, drawer, compose sheet, heroes, inspector
+docs/IMPLEMENTATION-PLAN.md   the Seva First implementation plan
+scripts/setup.mjs             database schema: tables, relationships, indexes
+scripts/seed.mjs              demo neighbourhood + live activity simulator
+scripts/smoke.mjs             end-to-end check against a live project
+src/lib/i18n.ts               English, Bengali and Hindi text
+src/lib/api.ts                every database query, transaction and aggregate
+src/components/               map, feed, post view, compose form, heroes
 ```
 
 ## License
