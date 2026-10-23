@@ -31,6 +31,9 @@ import { LANGS, useLang, type Lang } from './lib/i18n';
 import { isEmergency, type Category, type Kind, type LngLat, type Message, type Post } from './lib/types';
 
 type Tab = 'nearby' | 'mine' | 'heroes';
+
+/** The database call log is a developer tool; open the app with ?inspector to show it. */
+const SHOW_INSPECTOR = new URLSearchParams(window.location.search).has('inspector');
 type Toast = { id: number; msg: string; tone: 'ok' | 'warn' | 'err' };
 
 function useDebounced<T>(value: T, ms: number): T {
@@ -368,7 +371,7 @@ export default function App() {
                         </div>
                         <label className="radius">
                           <input type="range" min={0.5} max={20} step={0.5} value={radiusKm} onChange={(e) => setRadiusKm(Number(e.target.value))} />
-                          <span>{radiusKm} km</span>
+                          <span>{t('dist.km', { n: radiusKm })}</span>
                         </label>
                       </div>
                       <label className="toggle">
@@ -428,7 +431,7 @@ export default function App() {
         )}
       </div>
 
-      <Inspector open={inspectorOpen} onToggle={() => setInspectorOpen((o) => !o)} />
+      {SHOW_INSPECTOR && <Inspector open={inspectorOpen} onToggle={() => setInspectorOpen((o) => !o)} />}
 
       <div className="toasts" aria-live="polite">
         {toasts.map((ts) => (
