@@ -37,6 +37,8 @@ Hearth is a free, mobile-friendly web app. No install, no email, just a first na
 - **Runs in any modern mobile browser**; no app store or install needed.
 - **Free map data** (OpenStreetMap) and no paid APIs, so running costs stay low.
 
+<p align="center"><img src="docs/screenshot-bengali-emergency.png" alt="Emergency mode in the Bengali interface, showing only urgent medicine, water and rescue posts" width="100%" /></p>
+
 📄 **The full Innovation & Implementation Plan** (problem, location, beneficiaries, cost, timeline, impact, scalability) is in [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md).
 
 ## How it works (technology)

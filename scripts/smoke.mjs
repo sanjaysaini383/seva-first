@@ -67,7 +67,7 @@ await check('aggregation: groupBy helper + sum + count', async () => {
 });
 
 await check('Query.or on two indexed columns', async () => {
-  const r = await list('posts', [Query.or([Query.equal('authorId', 'seed-asha'), Query.equal('helperId', 'seed-asha')])]);
+  const r = await list('posts', [Query.or([Query.equal('authorId', 'seed-arijit'), Query.equal('helperId', 'seed-arijit')])]);
   return `${r.total} rows`;
 });
 
